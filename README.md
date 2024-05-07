@@ -1,6 +1,7 @@
-# ASP.NET-MVC-Movies
+# ASP.NET-Core-Identity-Movies
 
-ASP.NET MVC Moview app. The user is able perform CRUD operations on a webpage that stores Movies and TV Shows.
+ASP.NET Core app with Identity. The purpose of the app is to scaffold the authentication pages to a previously created app. It also uses
+Serilog for logging to a table in SQL Server.
 
 ## Main Concepts
 
@@ -15,6 +16,8 @@ In the process of creating the project, the following concepts have been applied
 5. WebPage Localization configuration
 6. Using Data Anotations for Model
 7. Using Bind atribute
+8. ASP.NET Core Identity
+9. Serilog MSSqlServer Sink
 
 ### JavaScript
 
