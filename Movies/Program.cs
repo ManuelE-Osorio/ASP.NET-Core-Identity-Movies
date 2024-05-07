@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Identity;
 using Serilog;
 using Serilog.Templates;
 using Serilog.Templates.Themes;
+using Serilog.Sinks.MSSqlServer;
+using Serilog.Configuration;
 
-using var log = new LoggerConfiguration()
-    .WriteTo.File("log")
-    .CreateLogger();
+Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,14 +23,21 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 
 builder.Services.AddControllersWithViews();
 
-    builder.Services.AddSerilog((services, lc) => lc
-        .ReadFrom.Configuration(builder.Configuration)
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .WriteTo.Console(new ExpressionTemplate(
-            // Include trace and span ids when present.
-            "[{@t:HH:mm:ss} {@l:u3}{#if @tr is not null} ({substring(@tr,0,4)}:{substring(@sp,0,4)}){#end}] {@m}\n{@x}",
-            theme: TemplateTheme.Code)));
+builder.Services.AddSerilog((services, lc) => lc
+    .ReadFrom.Configuration(builder.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(new ExpressionTemplate(
+        // Include trace and span ids when present.
+        "[{@t:HH:mm:ss} {@l:u3}{#if @tr is not null} ({substring(@tr,0,4)}:{substring(@sp,0,4)}){#end}] {@m}\n{@x}",
+        theme: TemplateTheme.Code))
+    .WriteTo.MSSqlServer(
+        connectionString: builder.Configuration.GetConnectionString("MoviesConnectionString") ?? throw new InvalidOperationException("Connection string 'MovieContext' not found."),
+        sinkOptions: new MSSqlServerSinkOptions { TableName = "Logs", AutoCreateSqlDatabase = true, AutoCreateSqlTable = true },
+        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information
+        ));
+
+
 
 var app = builder.Build();
 app.UseSerilogRequestLogging();
